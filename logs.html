@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiberGuarda — Painel de Logs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0a0d14;
+      --surface: #10141f;
+      --border:  #1e2a44;
+      --accent:  #00e5ff;
+      --green:   #10b981;
+      --warn:    #f59e0b;
+      --danger:  #ef4444;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-left h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header-left h1 span { color: var(--accent); }
+
+    .header-left p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      margin-top: 0.25rem;
+    }
+
+    .header-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .btn-accent  { background: var(--accent);  color: var(--bg);  border-color: var(--accent);  }
+    .btn-outline { background: transparent;    color: var(--text); }
+    .btn-danger  { background: transparent;    color: var(--danger); border-color: var(--danger); }
+
+    .btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .kpi-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 0.4rem;
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: 'Space Mono', monospace;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ── DOIS PAINÉIS LADO A LADO ── */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 800px) { .panels { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel-title {
+      padding: 1rem 1.25rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Mini barras de gráfico */
+    .bar-list {
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .bar-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.82rem; }
+    .bar-label { min-width: 90px; color: var(--text); }
+    .bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.6s; }
+    .bar-count { min-width: 30px; text-align: right; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 0.75rem; }
+
+    /* ── TABELA DE LOGS ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .table-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .filter-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 0.4rem 0.75rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.2s;
+    }
+
+    .filter-input:focus { border-color: var(--accent); }
+
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .log-table th {
+      padding: 0.6rem 1rem;
+      text-align: left;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .log-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid rgba(30,42,68,0.5);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    .log-table tr:hover td { background: rgba(0,229,255,0.03); }
+    .log-table tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+
+    .badge-acesso   { background: rgba(0,229,255,0.12);  color: var(--accent); }
+    .badge-saida    { background: rgba(100,116,139,0.15); color: var(--muted); }
+    .badge-quiz     { background: rgba(245,158,11,0.15);  color: var(--warn); }
+    .badge-checklist{ background: rgba(16,185,129,0.15);  color: var(--green); }
+    .badge-senha    { background: rgba(124,58,237,0.15);  color: #a78bfa; }
+    .badge-nav      { background: rgba(239,68,68,0.1);    color: var(--danger); }
+    .badge-outro    { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+    .mono { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    #updateTime {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1><span>Ciber</span>Guarda — Painel de Logs</h1>
+    <p id="updateTime">Carregando…</p>
+  </div>
+  <div class="header-actions">
+    <a href="index.html" class="btn btn-outline">← Voltar ao site</a>
+    <button class="btn btn-accent" onclick="exportarLogs()">⬇️ Exportar JSON</button>
+    <button class="btn btn-outline" onclick="renderDashboard()">🔄 Atualizar</button>
+    <button class="btn btn-danger" onclick="confirmarLimpar()">🗑️ Limpar logs</button>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-grid" id="kpiGrid"></div>
+
+<!-- GRÁFICOS -->
+<div class="panels">
+  <div class="panel">
+    <div class="panel-title">Tipo de evento</div>
+    <div class="bar-list" id="chartTipos"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Dispositivo</div>
+    <div class="bar-list" id="chartDispositivos"></div>
+  </div>
+</div>
+
+<!-- TABELA -->
+<div class="table-wrap">
+  <div class="table-header">
+    <span class="table-title">Histórico completo</span>
+    <input class="filter-input" type="text" placeholder="Filtrar por tipo, sessão…" oninput="filtrarTabela(this.value)" id="filterInput">
+  </div>
+  <div id="tableContainer"></div>
+</div>
+
+<!-- logger.js para ter acesso às funções exportarLogs e limparLogs -->
+<script src="logger.js"></script>
+<script>
+  let todosLogs = [];
+
+  /* ── BADGES ── */
+  function badgeTipo(tipo) {
+    const map = {
+      acesso_pagina:   ['badge-acesso',    '🌐 Acesso'],
+      saida_pagina:    ['badge-saida',     '🚪 Saída'],
+      quiz_respondido: ['badge-quiz',      '🧩 Quiz'],
+      checklist_item:  ['badge-checklist', '✅ Checklist'],
+      usou_testador_senha: ['badge-senha', '🔐 Senha'],
+      clique_nav:      ['badge-nav',       '🔗 Nav'],
+    };
+    const [cls, label] = map[tipo] || ['badge-outro', tipo];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  /* ── KPIs ── */
+  function renderKPIs(logs) {
+    const sessoes = new Set(logs.map(l => l.sessao)).size;
+    const acessos = logs.filter(l => l.tipo === 'acesso_pagina').length;
+    const quizzes = logs.filter(l => l.tipo === 'quiz_respondido').length;
+    const corretos = logs.filter(l => l.tipo === 'quiz_respondido' && l.correto).length;
+    const tempos   = logs.filter(l => l.tipo === 'saida_pagina' && l.tempo_na_pagina_seg);
+    const tempoMedio = tempos.length
+      ? Math.round(tempos.reduce((a, b) => a + b.tempo_na_pagina_seg, 0) / tempos.length)
+      : 0;
+
+    document.getElementById('kpiGrid').innerHTML = `
+      <div class="kpi">
+        <div class="kpi-label">Total de eventos</div>
+        <div class="kpi-value">${logs.length}</div>
+        <div class="kpi-sub">registros no log</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Sessões únicas</div>
+        <div class="kpi-value">${sessoes}</div>
+        <div class="kpi-sub">visitantes distintos</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Acessos à página</div>
+        <div class="kpi-value">${acessos}</div>
+        <div class="kpi-sub">page views registrados</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Quiz respondido</div>
+        <div class="kpi-value">${quizzes}</div>
+        <div class="kpi-sub">${corretos} respostas corretas</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Tempo médio</div>
+        <div class="kpi-value">${tempoMedio}s</div>
+        <div class="kpi-sub">na página por sessão</div>
+      </div>
+    `;
+  }
+
+  /* ── MINI GRÁFICOS ── */
+  function renderChart(containerId, dados) {
+    const max = Math.max(...Object.values(dados), 1);
+    const html = Object.entries(dados)
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, count]) => `
+        <div class="bar-item">
+          <span class="bar-label">${label}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${(count / max * 100).toFixed(1)}%"></div>
+          </div>
+          <span class="bar-count">${count}</span>
+        </div>
+      `).join('');
+    document.getElementById(containerId).innerHTML = html || '<div style="padding:1rem;color:var(--muted);font-size:0.8rem;">Sem dados</div>';
+  }
+
+  /* ── TABELA ── */
+  function renderTabela(logs) {
+    if (!logs.length) {
+      document.getElementById('tableContainer').innerHTML =
+        '<div class="empty-state">📭 Nenhum log encontrado.<br>Acesse a página principal para gerar registros.</div>';
+      return;
+    }
+
+    const rows = logs.map(l => {
+      const extra = Object.entries(l)
+        .filter(([k]) => !['id','sessao','tipo','horario','dispositivo','navegador','idioma','pagina'].includes(k))
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(' · ');
+
+      return `
+        <tr>
+          <td class="mono">${l.horario}</td>
+          <td>${badgeTipo(l.tipo)}</td>
+          <td class="mono">${l.sessao}</td>
+          <td>${l.dispositivo} · ${l.navegador}</td>
+          <td class="mono" style="color:var(--muted);font-size:0.7rem;">${extra || '—'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    document.getElementById('tableContainer').innerHTML = `
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Horário</th>
+            <th>Evento</th>
+            <th>Sessão</th>
+            <th>Dispositivo</th>
+            <th>Detalhes</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  /* ── FILTRO ── */
+  function filtrarTabela(termo) {
+    const t = termo.toLowerCase();
+    const filtrados = todosLogs.filter(l =>
+      JSON.stringify(l).toLowerCase().includes(t)
+    );
+    renderTabela(filtrados);
+  }
+
+  /* ── RENDER PRINCIPAL ── */
+  function renderDashboard() {
+    todosLogs = window.getLogs();
+
+    // KPIs
+    renderKPIs(todosLogs);
+
+    // Gráfico de tipos
+    const contTipos = {};
+    todosLogs.forEach(l => {
+      const label = l.tipo.replace(/_/g, ' ');
+      contTipos[label] = (contTipos[label] || 0) + 1;
+    });
+    renderChart('chartTipos', contTipos);
+
+    // Gráfico de dispositivos
+    const contDisp = {};
+    todosLogs.forEach(l => {
+      contDisp[l.dispositivo] = (contDisp[l.dispositivo] || 0) + 1;
+    });
+    renderChart('chartDispositivos', contDisp);
+
+    // Tabela
+    renderTabela(todosLogs);
+
+    // Timestamp
+    document.getElementById('updateTime').textContent =
+      'Atualizado em: ' + new Date().toLocaleString('pt-BR');
+  }
+
+  /* ── LIMPAR ── */
+  function confirmarLimpar() {
+    if (confirm('⚠️ Tem certeza que quer apagar TODOS os logs? Essa ação não pode ser desfeita.')) {
+      window.limparLogs();
+      renderDashboard();
+    }
+  }
+
+  /* ── INIT ── */
+  renderDashboard();
+
+  // Auto-atualiza a cada 10 segundos
+  setInterval(renderDashboard, 10000);
+</script>
+
+</body>
+</html>

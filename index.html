@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CiberGuarda — Sua Proteção Digital</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     NAVEGAÇÃO
+════════════════════════════════════════ -->
+<nav>
+  <a class="logo" href="#"><span>Ciber</span>Guarda</a>
+  <ul>
+    <li><a href="#senhas">Senhas</a></li>
+    <li><a href="#dicas">Dicas</a></li>
+    <li><a href="#phishing">Phishing</a></li>
+    <li><a href="#checklist">Checklist</a></li>
+    <li><a href="logs.html" target="_blank" id="navLogs">📊 Logs</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     HERO
+════════════════════════════════════════ -->
+<header class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div>
+    <div class="hero-badge"><div class="dot"></div> Guia de Segurança Digital</div>
+    <h1>Proteja seus<br><span class="highlight">dados online</span></h1>
+    <p>Aprenda de forma simples e prática como se defender das ameaças digitais mais comuns do dia a dia.</p>
+    <div class="hero-cta">
+      <a href="#senhas" class="btn btn-primary">Começar agora</a>
+      <a href="#checklist" class="btn btn-secondary">Ver checklist</a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════
+     ESTATÍSTICAS
+════════════════════════════════════════ -->
+<div class="stats-bar fade-in">
+  <div class="stat-item">
+    <div class="stat-num">2.3B</div>
+    <div class="stat-label">Senhas vazadas em 2023</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">92%</div>
+    <div class="stat-label">Ataques via e-mail (phishing)</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">R$32bi</div>
+    <div class="stat-label">Prejuízo no Brasil em 2023</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">3min</div>
+    <div class="stat-label">Senha fraca é quebrada em</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SEÇÃO 01 — SENHAS
+════════════════════════════════════════ -->
+<section id="senhas">
+  <div class="two-col fade-in">
+    <div>
+      <div class="section-label">// 01 — Senhas</div>
+      <h2 class="section-title">Crie senhas que ninguém consiga quebrar</h2>
+      <p class="section-desc">Uma senha forte é sua primeira linha de defesa. Teste a sua abaixo e veja como ela se sai.</p>
+
+      <div class="do-dont">
+        <div class="do-box">
+          <div class="box-title">✅ Faça isso</div>
+          <ul class="box-list">
+            <li>Use frases longas: "Meu@Gato_Dorme8h!"</li>
+            <li>Misture letras, números e símbolos</li>
+            <li>Use senhas únicas por site</li>
+            <li>Ative um gerenciador de senhas</li>
+            <li>Use autenticação de dois fatores</li>
+          </ul>
+        </div>
+        <div class="dont-box">
+          <div class="box-title">❌ Evite isso</div>
+          <ul class="box-list">
+            <li>Usar "123456" ou "senha123"</li>
+            <li>Usar seu nome ou data de nascimento</li>
+            <li>Repetir a mesma senha em vários sites</li>
+            <li>Compartilhar senhas com outras pessoas</li>
+            <li>Anotar senhas em papel visível</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTADOR DE SENHA -->
+    <div class="password-section">
+      <h3 style="margin-bottom:0.25rem;font-size:1.1rem;">🔐 Testador de Senha</h3>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem;">Nada é enviado ou salvo — análise 100% local.</p>
+
+      <div class="pw-input-wrap">
+        <input
+          type="password"
+          class="pw-input"
+          id="pwInput"
+          placeholder="Digite uma senha para testar…"
+          oninput="checkPassword(this.value)"
+        >
+        <button class="pw-toggle" onclick="togglePw()" id="pwToggle">👁️</button>
+      </div>
+
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+      <div class="strength-text" id="strengthText">Digite uma senha para começar</div>
+
+      <div class="pw-criteria">
+        <div class="criterion" id="c-len"><div class="criterion-icon">✓</div> Mínimo 12 caracteres</div>
+        <div class="criterion" id="c-upper"><div class="criterion-icon">✓</div> Letra maiúscula</div>
+        <div class="criterion" id="c-lower"><div class="criterion-icon">✓</div> Letra minúscula</div>
+        <div class="criterion" id="c-num"><div class="criterion-icon">✓</div> Número</div>
+        <div class="criterion" id="c-sym"><div class="criterion-icon">✓</div> Símbolo especial (!@#...)</div>
+        <div class="criterion" id="c-seq"><div class="criterion-icon">✓</div> Sem sequências óbvias</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SEÇÃO 02 — AMEAÇAS
+════════════════════════════════════════ -->
+<section id="dicas">
+  <div class="section-label fade-in">// 02 — Ameaças Comuns</div>
+  <h2 class="section-title fade-in">Conheça os principais perigos</h2>
+  <p class="section-desc fade-in">Hackers exploram comportamentos comuns. Entenda cada ameaça para não cair nelas.</p>
+
+  <div class="cards-grid fade-in">
+
+    <!-- PHISHING -->
+    <div class="card">
+      <span class="card-icon">📧</span>
+      <h3>Phishing</h3>
+      <p>E-mails ou mensagens falsas que imitam bancos, lojas ou governos para roubar seus dados ou instalar malware. Sempre confirme o remetente antes de clicar.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-danger">Alto Risco</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, 'EihZ8WFBGKA')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/EihZ8WFBGKA?rel=0&start=0" allowfullscreen loading="lazy" title="Phishing e Códigos Maliciosos — Curso em Vídeo"></iframe>
+        </div>
+        <p class="video-caption">🎓 Curso em Vídeo — Phishing e Páginas Falsas (slides + narração)</p>
+      </div>
+    </div>
+
+    <!-- WI-FI PÚBLICO -->
+    <div class="card">
+      <span class="card-icon">📶</span>
+      <h3>Wi-Fi Público Falso</h3>
+      <p>Redes abertas em shoppings e cafés podem ser armadilhas. Hackers criam redes com nomes parecidos e interceptam todo o seu tráfego de dados.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-danger">Alto Risco</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, 'C2q1WupfEV4')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/C2q1WupfEV4?rel=0" allowfullscreen loading="lazy" title="Phishing e Redes — Curso em Vídeo"></iframe>
+        </div>
+        <p class="video-caption">🎓 Curso em Vídeo — Redes, Wi-Fi e Phishing (slides + narração)</p>
+      </div>
+    </div>
+
+    <!-- LINKS MALICIOSOS -->
+    <div class="card">
+      <span class="card-icon">🔗</span>
+      <h3>Links Maliciosos</h3>
+      <p>Links encurtados ou de aparência inocente podem levar a sites falsos ou iniciar downloads de vírus. Passe o mouse sobre o link antes de clicar para ver o destino real.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-warn">Médio Risco</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, 'ZIqniZrsR0I')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/ZIqniZrsR0I?rel=0" allowfullscreen loading="lazy" title="O que é phishing? Links falsos explicados"></iframe>
+        </div>
+        <p class="video-caption">🎓 Curso em Vídeo — O que é phishing? Links e sites falsos</p>
+      </div>
+    </div>
+
+    <!-- ENGENHARIA SOCIAL -->
+    <div class="card">
+      <span class="card-icon">📱</span>
+      <h3>Engenharia Social</h3>
+      <p>Criminosos ligam ou mandam mensagens se passando por suporte técnico ou familiares em apuros para pedir dados ou dinheiro. Nunca compartilhe senhas por telefone.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-warn">Médio Risco</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, 'tlpvbXirkoQ')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/tlpvbXirkoQ?rel=0" allowfullscreen loading="lazy" title="Engenharia Social — Segurança da Informação"></iframe>
+        </div>
+        <p class="video-caption">🎓 Curso em Vídeo — Engenharia Social explicada com exemplos</p>
+      </div>
+    </div>
+
+    <!-- RANSOMWARE -->
+    <div class="card">
+      <span class="card-icon">💾</span>
+      <h3>Ransomware</h3>
+      <p>Malware que criptografa seus arquivos e exige pagamento em criptomoeda para devolvê-los. Mantenha backups regulares e nunca pague o resgate.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-danger">Alto Risco</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, 'S7VRWSW-zNw')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/S7VRWSW-zNw?rel=0" allowfullscreen loading="lazy" title="O que é Ransomware?"></iframe>
+        </div>
+        <p class="video-caption">🎓 AssistenciaBR — O que é Ransomware? (animação + narração)</p>
+      </div>
+    </div>
+
+    <!-- LOJAS FALSAS / COMÉRCIO ELETRÔNICO -->
+    <div class="card">
+      <span class="card-icon">🛒</span>
+      <h3>Lojas Falsas</h3>
+      <p>Sites fraudulentos que imitam lojas reais com preços irresistíveis. Sempre verifique o cadeado HTTPS, leia avaliações e pesquise o CNPJ da empresa.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-warn">Médio Risco</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, 'mpXZo5ifYss')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/mpXZo5ifYss?rel=0" allowfullscreen loading="lazy" title="Como detectar um site falso — Dell"></iframe>
+        </div>
+        <p class="video-caption">🎓 Dell — Como detectar site falso (screencast + narração)</p>
+      </div>
+    </div>
+
+    <!-- 2FA -->
+    <div class="card">
+      <span class="card-icon">🔒</span>
+      <h3>Autenticação 2 Fatores</h3>
+      <p>Ative o 2FA em todas as contas importantes. Mesmo que sua senha vaze, o invasor precisará de um segundo fator (como um código no celular) para entrar.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-safe">Proteção</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, 'qNd_1TRy50s')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/qNd_1TRy50s?rel=0" allowfullscreen loading="lazy" title="Como usar 2FA corretamente"></iframe>
+        </div>
+        <p class="video-caption">🎓 Como usar a autenticação de 2 fatores corretamente (tutorial + tela)</p>
+      </div>
+    </div>
+
+    <!-- ATUALIZAÇÕES -->
+    <div class="card">
+      <span class="card-icon">🛡️</span>
+      <h3>Atualizações de Sistema</h3>
+      <p>Atualizações corrigem falhas de segurança exploradas por hackers. Manter o sistema desatualizado é como deixar a porta da frente aberta.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-info">Dica</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, '0GQb6-LxJf0')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/0GQb6-LxJf0?rel=0" allowfullscreen loading="lazy" title="Segurança da Informação — Vírus, Malware e Proteção"></iframe>
+        </div>
+        <p class="video-caption">🎓 Curso em Vídeo — Malware, vírus e como se proteger (slides + narração)</p>
+      </div>
+    </div>
+
+    <!-- SENHAS FORTES / DADOS SENSÍVEIS -->
+    <div class="card">
+      <span class="card-icon">🗂️</span>
+      <h3>Dados Sensíveis & Senhas</h3>
+      <p>Nunca envie CPF, cartão ou senhas por WhatsApp ou redes sociais. Use senhas fortes e únicas para cada serviço e nunca as reutilize.</p>
+      <div class="card-footer">
+        <span class="card-tag tag-danger">Alto Risco</span>
+        <button class="video-toggle-btn" onclick="toggleVideo(this, 'whSgBpNyr2c')">▶ Ver vídeo</button>
+      </div>
+      <div class="video-embed hidden">
+        <div class="video-wrap">
+          <iframe src="" data-src="https://www.youtube.com/embed/whSgBpNyr2c?rel=0" allowfullscreen loading="lazy" title="Cuidados com Senhas — Curso em Vídeo"></iframe>
+        </div>
+        <p class="video-caption">🎓 Curso em Vídeo — Cuidados com senhas e dados pessoais (slides + narração)</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SEÇÃO 03 — QUIZ PHISHING
+════════════════════════════════════════ -->
+<section id="phishing" style="padding-top:0;">
+  <div class="section-label fade-in">// 03 — Treinamento</div>
+  <h2 class="section-title fade-in">Você identificaria um ataque?</h2>
+  <p class="section-desc fade-in">Analise as mensagens abaixo e decida: são legítimas ou são phishing?</p>
+
+  <div class="quiz-section fade-in">
+    <div id="quizContainer"></div>
+    <div class="quiz-result" id="quizResult"></div>
+    <div class="quiz-nav">
+      <button class="btn btn-secondary" onclick="nextQuiz()" id="nextBtn" style="display:none">Próximo →</button>
+      <span class="quiz-progress" id="quizProgress">1 / 5</span>
+    </div>
+    <div id="quizScore" style="display:none;margin-top:1.5rem;padding:1.25rem;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.2);border-radius:10px;">
+      <div style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;">🏁 Resultado final</div>
+      <div id="scoreTxt" style="font-family:'Space Mono',monospace;font-size:0.9rem;color:var(--muted);"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SEÇÃO 04 — CHECKLIST
+════════════════════════════════════════ -->
+<section id="checklist">
+  <div class="section-label fade-in">// 04 — Checklist</div>
+  <h2 class="section-title fade-in">Sua proteção digital em 10 passos</h2>
+  <p class="section-desc fade-in">Marque cada item conforme você for implementando. Quanto mais marcados, mais seguro você está.</p>
+
+  <div class="progress-summary fade-in">
+    <span id="checkCount">0 / 10 concluídos</span>
+    <div class="progress-bar-full"><div class="progress-bar-inner" id="checkProgress"></div></div>
+  </div>
+
+  <div class="checklist fade-in" id="checklist">
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>🔐 Criar senhas fortes e únicas para cada conta</strong>
+        <span>Use frases longas com letras, números e símbolos. Nunca repita a mesma senha.</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>📱 Ativar autenticação de dois fatores (2FA) em todas as contas</strong>
+        <span>Use Google Authenticator, Authy ou SMS como segunda camada de proteção.</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>🔑 Usar um gerenciador de senhas</strong>
+        <span>Apps como Bitwarden (gratuito) guardam suas senhas com segurança.</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>🔄 Manter sistema e aplicativos atualizados</strong>
+        <span>Atualizações corrigem falhas de segurança críticas exploradas por hackers.</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>📶 Nunca usar Wi-Fi público sem VPN</strong>
+        <span>Redes abertas são território de hackers. Use uma VPN confiável para criptografar sua conexão.</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>🔗 Verificar links antes de clicar</strong>
+        <span>Passe o mouse sobre o link, use sites como virustotal.com, e desconfie de URLs encurtadas.</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>🚫 Nunca compartilhar dados sensíveis por mensagem</strong>
+        <span>CPF, cartão, senhas e documentos jamais devem ser enviados por WhatsApp, e-mail ou redes sociais.</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>💾 Fazer backups regulares dos dados importantes</strong>
+        <span>Regra 3-2-1: 3 cópias, em 2 mídias diferentes, 1 fora de casa (nuvem).</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>🛡️ Verificar permissões dos aplicativos instalados</strong>
+        <span>Um app de lanterna não precisa acessar seus contatos. Revogue permissões desnecessárias.</span>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">
+        <strong>🔎 Pesquisar antes de comprar em lojas online desconhecidas</strong>
+        <span>Verifique CNPJ no Receita Federal, leia avaliações no Reclame Aqui e confirme o HTTPS.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
+<footer>
+  <p>Feito com ❤️ para a <span>ATIEX — Atividade de Extensão Universitária</span></p>
+  <p style="margin-top:0.5rem;font-size:0.7rem;">Sua segurança digital começa com informação. Compartilhe com quem você ama.</p>
+</footer>
+
+<!-- Scripts externos -->
+<script src="logger.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
