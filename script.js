@@ -4,6 +4,52 @@
 ════════════════════════════════════════════════════════ */
 
 /* ════════════════════════════════
+   MODAL DE VÍDEO
+════════════════════════════════ */
+
+/**
+ * Abre o modal com o vídeo do YouTube
+ * @param {string} videoId - ID do vídeo no YouTube
+ * @param {string} titulo  - Título exibido no modal
+ */
+function openModal(videoId, titulo) {
+  const modal  = document.getElementById('videoModal');
+  const iframe = document.getElementById('modalIframe');
+  const title  = document.getElementById('modalTitle');
+
+  title.textContent = '🎬 ' + titulo;
+  iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=1`;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden'; // trava scroll da página
+
+  if (typeof logEvent === 'function') {
+    logEvent('video_aberto', { videoId, titulo });
+  }
+}
+
+/** Fecha o modal e para o vídeo */
+function closeModal() {
+  const modal  = document.getElementById('videoModal');
+  const iframe = document.getElementById('modalIframe');
+  modal.classList.remove('open');
+  iframe.src = ''; // para o vídeo
+  document.body.style.overflow = '';
+}
+
+/**
+ * Fecha o modal ao clicar fora da caixa
+ * @param {MouseEvent} e
+ */
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('videoModal')) closeModal();
+}
+
+// Fecha com tecla ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ════════════════════════════════
    FADE IN AO ROLAR A PÁGINA
 ════════════════════════════════ */
 const observer = new IntersectionObserver((entries) => {

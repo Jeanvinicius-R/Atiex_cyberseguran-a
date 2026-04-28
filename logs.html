@@ -6,6 +6,103 @@
   <title>CiberGuarda — Painel de Logs</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* ── TELA DE LOGIN ── */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    .login-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+
+    .login-box h2 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
+
+    .login-box p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 1rem;
+      text-align: center;
+      letter-spacing: 0.2em;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus { border-color: var(--accent); }
+    .login-input.shake { animation: shake 0.4s ease; border-color: var(--danger); }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-8px); }
+      40%      { transform: translateX(8px); }
+      60%      { transform: translateX(-5px); }
+      80%      { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .login-btn:hover { background: #33eaff; }
+
+    .login-error {
+      margin-top: 1rem;
+      font-size: 0.78rem;
+      color: var(--danger);
+      font-family: 'Space Mono', monospace;
+      min-height: 1.2em;
+    }
+
+    .login-attempts {
+      margin-top: 0.5rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+  </style>
+  <style>
     :root {
       --bg:      #0a0d14;
       --surface: #10141f;
@@ -262,6 +359,29 @@
 </head>
 <body>
 
+<!-- ════════════════════════════════
+     TELA DE LOGIN — só devs entram
+     Usuário: dev  |  Senha: ciberguarda@2025
+════════════════════════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <h2>Área Restrita</h2>
+    <p>Painel de logs — apenas desenvolvedores</p>
+    <input
+      class="login-input"
+      type="password"
+      id="loginInput"
+      placeholder="••••••••"
+      onkeydown="if(event.key==='Enter') tentarLogin()"
+      autocomplete="off"
+    >
+    <button class="login-btn" onclick="tentarLogin()">Entrar</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-attempts" id="loginAttempts"></div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div class="header">
   <div class="header-left">
@@ -464,11 +584,56 @@
     }
   }
 
-  /* ── INIT ── */
-  renderDashboard();
+  /* ── LOGIN ── */
+  const SENHA_CORRETA = 'ciberguarda@2025'; // ← altere aqui a senha
+  const SESSION_AUTH  = 'cg_dev_auth';
+  let tentativas = 0;
+  const MAX_TENTATIVAS = 5;
 
-  // Auto-atualiza a cada 10 segundos
-  setInterval(renderDashboard, 10000);
+  function verificarAuth() {
+    if (sessionStorage.getItem(SESSION_AUTH) === 'ok') {
+      document.getElementById('loginScreen').style.display = 'none';
+      renderDashboard();
+    }
+  }
+
+  function tentarLogin() {
+    const input = document.getElementById('loginInput');
+    const erro  = document.getElementById('loginError');
+    const info  = document.getElementById('loginAttempts');
+
+    if (tentativas >= MAX_TENTATIVAS) {
+      erro.textContent = '🚫 Muitas tentativas. Recarregue a página.';
+      input.disabled = true;
+      return;
+    }
+
+    if (input.value === SENHA_CORRETA) {
+      sessionStorage.setItem(SESSION_AUTH, 'ok');
+      document.getElementById('loginScreen').style.display = 'none';
+      renderDashboard();
+    } else {
+      tentativas++;
+      input.value = '';
+      input.classList.add('shake');
+      setTimeout(() => input.classList.remove('shake'), 400);
+      const restantes = MAX_TENTATIVAS - tentativas;
+      erro.textContent = '❌ Senha incorreta.';
+      info.textContent = restantes > 0
+        ? `${restantes} tentativa(s) restante(s)`
+        : '🚫 Conta bloqueada. Recarregue a página.';
+      if (restantes === 0) input.disabled = true;
+    }
+  }
+
+  // Verifica ao carregar
+  verificarAuth();
+
+  // Auto-atualiza a cada 10 segundos (só se autenticado)
+  setInterval(() => {
+    if (sessionStorage.getItem(SESSION_AUTH) === 'ok') renderDashboard();
+  }, 10000);
+
 </script>
 
 </body>
