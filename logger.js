@@ -1,145 +1,146 @@
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 /* ═══════════════════════════════════════════════════════
    CIBERGUARDA — logger.js
-   Sistema de log de acessos e eventos do usuário.
-   Os dados ficam salvos no localStorage do navegador.
-   Para uso em produção real, substitua o localStorage
-   por chamadas a uma API/backend próprio.
+   Sistema de log de acessos usando Firebase Realtime DB.
+   Todos os visitantes são registrados em tempo real
+   no banco de dados central do Firebase.
+
+   ⚠️  CONFIGURE AS CHAVES ABAIXO antes de publicar!
+       Siga o passo a passo em COMO-PUBLICAR.md
 ════════════════════════════════════════════════════════ */
 
 (function () {
   'use strict';
 
-  /* ──────────────────────────────
-     CONFIGURAÇÃO
-  ────────────────────────────── */
-  const LOG_KEY     = 'ciberguarda_logs';    // chave no localStorage
-  const SESSION_KEY = 'ciberguarda_session'; // chave da sessão atual
-  const MAX_LOGS    = 500;                   // limite máximo de registros guardados
+  /* ══════════════════════════════════════════════════════
+     🔧 CONFIGURAÇÃO DO FIREBASE
+     Cole aqui as suas chaves do projeto Firebase.
+     Você encontra essas chaves em:
+     Firebase Console → Seu projeto → Configurações ⚙️
+     → Seus apps → SDK Firebase → Configuração
+  ══════════════════════════════════════════════════════ */
+  // Import the functions you need from the SDKs you need
 
-  /* ──────────────────────────────
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCi0yuJQAqES7jIebtkSeoYzYBjOlJUQZ0",
+  authDomain: "ciberguarda.firebaseapp.com",
+  databaseURL: "https://ciberguarda-default-rtdb.firebaseio.com",
+  projectId: "ciberguarda",
+  storageBucket: "ciberguarda.firebasestorage.app",
+  messagingSenderId: "110278507200",
+  appId: "1:110278507200:web:280293cb704d160fb78b25",
+  measurementId: "G-W2WJJPGZJ3"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+  /* ══════════════════════════════════════════════════════
      UTILITÁRIOS
-  ────────────────────────────── */
+  ══════════════════════════════════════════════════════ */
 
   /** Retorna data/hora no formato brasileiro */
   function agora() {
     return new Date().toLocaleString('pt-BR', {
-      day:    '2-digit', month:  '2-digit', year: 'numeric',
-      hour:   '2-digit', minute: '2-digit', second: '2-digit',
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
     });
   }
 
-  /** Gera um ID único de sessão */
+  /** Gera ID único de sessão */
   function gerarSessionId() {
     return 'sess_' + Math.random().toString(36).slice(2, 10).toUpperCase();
   }
 
-  /** Detecta o tipo de dispositivo */
+  /** Detecta tipo de dispositivo */
   function detectarDispositivo() {
     const ua = navigator.userAgent;
-    if (/Mobi|Android|iPhone|iPad/i.test(ua)) return '📱 Mobile';
-    if (/Tablet/i.test(ua)) return '📟 Tablet';
-    return '🖥️ Desktop';
+    if (/Mobi|Android|iPhone|iPad/i.test(ua)) return 'Mobile';
+    if (/Tablet/i.test(ua)) return 'Tablet';
+    return 'Desktop';
   }
 
-  /** Detecta o navegador aproximado */
+  /** Detecta navegador */
   function detectarNavegador() {
     const ua = navigator.userAgent;
-    if (ua.includes('Firefox'))  return 'Firefox';
-    if (ua.includes('Edg'))      return 'Edge';
-    if (ua.includes('OPR'))      return 'Opera';
-    if (ua.includes('Chrome'))   return 'Chrome';
-    if (ua.includes('Safari'))   return 'Safari';
+    if (ua.includes('Firefox')) return 'Firefox';
+    if (ua.includes('Edg'))     return 'Edge';
+    if (ua.includes('OPR'))     return 'Opera';
+    if (ua.includes('Chrome'))  return 'Chrome';
+    if (ua.includes('Safari'))  return 'Safari';
     return 'Outro';
   }
 
-  /** Detecta idioma do navegador */
-  function detectarIdioma() {
-    return navigator.language || 'desconhecido';
-  }
-
-  /* ──────────────────────────────
-     SESSÃO DO USUÁRIO
-  ────────────────────────────── */
-
-  /** Obtém ou cria a sessão atual (dura enquanto a aba estiver aberta) */
+  /** Obtém ou cria o ID de sessão */
   function obterSessao() {
-    let sess = sessionStorage.getItem(SESSION_KEY);
+    const KEY = 'cg_session_id';
+    let sess = sessionStorage.getItem(KEY);
     if (!sess) {
       sess = gerarSessionId();
-      sessionStorage.setItem(SESSION_KEY, sess);
+      sessionStorage.setItem(KEY, sess);
     }
     return sess;
   }
 
-  /* ──────────────────────────────
-     LEITURA / ESCRITA DE LOGS
-  ────────────────────────────── */
+  /* ══════════════════════════════════════════════════════
+     FIREBASE — inicialização e escrita
+  ══════════════════════════════════════════════════════ */
+  let db = null;
 
-  /** Lê todos os logs salvos */
-  function lerLogs() {
+  function inicializarFirebase() {
     try {
-      return JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
-    } catch {
-      return [];
-    }
-  }
-
-  /** Salva um novo registro de log */
-  function salvarLog(entrada) {
-    const logs = lerLogs();
-    logs.unshift(entrada); // mais recente primeiro
-    if (logs.length > MAX_LOGS) logs.splice(MAX_LOGS); // limita tamanho
-    try {
-      localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+      if (typeof firebase === 'undefined') {
+        console.warn('[Logger] Firebase SDK não carregado.');
+        return false;
+      }
+      if (!firebase.apps.length) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+      db = firebase.database();
+      console.info('[Logger] ✅ Firebase conectado. Sessão:', obterSessao());
+      return true;
     } catch (e) {
-      console.warn('[CiberGuarda Logger] Não foi possível salvar log:', e);
+      console.error('[Logger] Erro ao inicializar Firebase:', e);
+      return false;
     }
   }
 
-  /* ──────────────────────────────
-     API PÚBLICA
-  ────────────────────────────── */
+  function enviarParaFirebase(entrada) {
+    if (!db) return;
+    db.ref('logs').push(entrada)
+      .catch(e => console.error('[Logger] Erro ao enviar log:', e));
+  }
 
-  /**
-   * Registra um evento personalizado
-   * @param {string} tipo  - Nome do evento
-   * @param {object} extra - Dados adicionais (opcional)
-   */
+  /* ══════════════════════════════════════════════════════
+     API PÚBLICA
+  ══════════════════════════════════════════════════════ */
+
+  /** Registra um evento e envia ao Firebase */
   window.logEvent = function (tipo, extra = {}) {
     const entrada = {
-      id:         Date.now(),
-      sessao:     obterSessao(),
+      sessao:      obterSessao(),
       tipo,
-      horario:    agora(),
+      horario:     agora(),
+      timestamp:   Date.now(),
       dispositivo: detectarDispositivo(),
-      navegador:  detectarNavegador(),
-      idioma:     detectarIdioma(),
-      pagina:     document.title,
+      navegador:   detectarNavegador(),
+      idioma:      navigator.language || 'desconhecido',
+      resolucao:   `${screen.width}x${screen.height}`,
+      referrer:    document.referrer || 'direto',
       ...extra,
     };
-    salvarLog(entrada);
+    enviarParaFirebase(entrada);
   };
 
-  /**
-   * Retorna todos os logs em ordem do mais recente
-   */
-  window.getLogs = function () {
-    return lerLogs();
-  };
-
-  /**
-   * Apaga todos os logs (use com cuidado!)
-   */
-  window.limparLogs = function () {
-    localStorage.removeItem(LOG_KEY);
-    console.info('[CiberGuarda Logger] Logs apagados.');
-  };
-
-  /**
-   * Exporta os logs como arquivo JSON para download
-   */
-  window.exportarLogs = function () {
-    const dados = JSON.stringify(lerLogs(), null, 2);
+  /** Exporta array de logs como arquivo JSON */
+  window.exportarLogs = function (logs) {
+    const dados = JSON.stringify(logs, null, 2);
     const blob  = new Blob([dados], { type: 'application/json' });
     const url   = URL.createObjectURL(blob);
     const a     = document.createElement('a');
@@ -149,57 +150,79 @@
     URL.revokeObjectURL(url);
   };
 
-  /* ──────────────────────────────
+  /** Apaga todos os logs do Firebase */
+  window.limparLogsFirebase = function () {
+    if (!db) return Promise.reject('DB não inicializado');
+    return db.ref('logs').remove();
+  };
+
+  /** Escuta logs em tempo real e chama callback a cada atualização */
+  window.escutarLogs = function (callback) {
+    if (!db) return;
+    db.ref('logs').orderByChild('timestamp').on('value', snapshot => {
+      const logs = [];
+      snapshot.forEach(child => {
+        logs.unshift({ id: child.key, ...child.val() });
+      });
+      callback(logs);
+    });
+  };
+
+  /* ══════════════════════════════════════════════════════
      LOG AUTOMÁTICO DE ACESSO
-  ────────────────────────────── */
+  ══════════════════════════════════════════════════════ */
 
-  // Registra acesso à página automaticamente
-  window.logEvent('acesso_pagina', {
-    referrer:    document.referrer || 'direto',
-    resolucao:   `${screen.width}x${screen.height}`,
-    online:      navigator.onLine,
-    cookieHabil: navigator.cookieEnabled,
-  });
+  function init() {
+    if (!inicializarFirebase()) return;
 
-  // Rastreia tempo de permanência ao sair
-  window.addEventListener('beforeunload', () => {
-    const inicio = parseInt(sessionStorage.getItem('cg_inicio') || Date.now(), 10);
-    const segundos = Math.round((Date.now() - inicio) / 1000);
-    window.logEvent('saida_pagina', { tempo_na_pagina_seg: segundos });
-  });
+    // Log de acesso à página
+    window.logEvent('acesso_pagina');
+    sessionStorage.setItem('cg_inicio', Date.now());
 
-  // Marca horário de entrada
-  sessionStorage.setItem('cg_inicio', Date.now());
+    // Log de saída com tempo de permanência
+    window.addEventListener('beforeunload', () => {
+      const inicio   = parseInt(sessionStorage.getItem('cg_inicio') || Date.now(), 10);
+      const segundos = Math.round((Date.now() - inicio) / 1000);
+      window.logEvent('saida_pagina', { tempo_na_pagina_seg: segundos });
+    });
 
-  // Rastreia cliques em seções da nav
-  document.addEventListener('DOMContentLoaded', () => {
+    // Cliques na nav
     document.querySelectorAll('nav a').forEach(link => {
       link.addEventListener('click', () => {
-        window.logEvent('clique_nav', { destino: link.getAttribute('href') || link.textContent });
+        window.logEvent('clique_nav', {
+          destino: link.getAttribute('href') || link.textContent.trim(),
+        });
       });
     });
 
-    // Rastreia interações com o testador de senha (sem guardar a senha!)
+    // Uso do testador de senha (sem salvar a senha!)
     const pwInput = document.getElementById('pwInput');
     if (pwInput) {
       let logouSenha = false;
       pwInput.addEventListener('input', () => {
         if (!logouSenha) {
           window.logEvent('usou_testador_senha');
-          logouSenha = true; // só registra 1x por sessão
+          logouSenha = true;
         }
       });
     }
 
-    // Rastreia cliques no checklist
+    // Cliques no checklist
     document.querySelectorAll('.check-item').forEach((item, i) => {
       item.addEventListener('click', () => {
-        const checked = item.classList.contains('checked');
-        window.logEvent('checklist_item', { item: i + 1, acao: checked ? 'desmarcou' : 'marcou' });
+        const marcou = !item.classList.contains('checked');
+        window.logEvent('checklist_item', {
+          item: i + 1,
+          acao: marcou ? 'marcou' : 'desmarcou',
+        });
       });
     });
-  });
+  }
 
-  console.info('[CiberGuarda Logger] ✅ Sistema de logs iniciado. Sessão:', obterSessao());
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
 })();

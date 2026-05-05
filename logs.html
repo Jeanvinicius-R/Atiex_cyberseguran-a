@@ -390,7 +390,7 @@
   </div>
   <div class="header-actions">
     <a href="index.html" class="btn btn-outline">← Voltar ao site</a>
-    <button class="btn btn-accent" onclick="exportarLogs()">⬇️ Exportar JSON</button>
+    <button class="btn btn-accent" id="btnExportar">⬇️ Exportar JSON</button>
     <button class="btn btn-outline" onclick="renderDashboard()">🔄 Atualizar</button>
     <button class="btn btn-danger" onclick="confirmarLimpar()">🗑️ Limpar logs</button>
   </div>
@@ -420,7 +420,10 @@
   <div id="tableContainer"></div>
 </div>
 
-<!-- logger.js para ter acesso às funções exportarLogs e limparLogs -->
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<!-- Logger (contém a config do Firebase e funções de leitura) -->
 <script src="logger.js"></script>
 <script>
   let todosLogs = [];
@@ -428,12 +431,13 @@
   /* ── BADGES ── */
   function badgeTipo(tipo) {
     const map = {
-      acesso_pagina:   ['badge-acesso',    '🌐 Acesso'],
-      saida_pagina:    ['badge-saida',     '🚪 Saída'],
-      quiz_respondido: ['badge-quiz',      '🧩 Quiz'],
-      checklist_item:  ['badge-checklist', '✅ Checklist'],
-      usou_testador_senha: ['badge-senha', '🔐 Senha'],
-      clique_nav:      ['badge-nav',       '🔗 Nav'],
+      acesso_pagina:       ['badge-acesso',    '🌐 Acesso'],
+      saida_pagina:        ['badge-saida',     '🚪 Saída'],
+      quiz_respondido:     ['badge-quiz',      '🧩 Quiz'],
+      checklist_item:      ['badge-checklist', '✅ Checklist'],
+      usou_testador_senha: ['badge-senha',     '🔐 Senha'],
+      clique_nav:          ['badge-nav',       '🔗 Nav'],
+      video_aberto:        ['badge-outro',     '▶️ Vídeo'],
     };
     const [cls, label] = map[tipo] || ['badge-outro', tipo];
     return `<span class="badge ${cls}">${label}</span>`;
@@ -441,9 +445,9 @@
 
   /* ── KPIs ── */
   function renderKPIs(logs) {
-    const sessoes = new Set(logs.map(l => l.sessao)).size;
-    const acessos = logs.filter(l => l.tipo === 'acesso_pagina').length;
-    const quizzes = logs.filter(l => l.tipo === 'quiz_respondido').length;
+    const sessoes  = new Set(logs.map(l => l.sessao)).size;
+    const acessos  = logs.filter(l => l.tipo === 'acesso_pagina').length;
+    const quizzes  = logs.filter(l => l.tipo === 'quiz_respondido').length;
     const corretos = logs.filter(l => l.tipo === 'quiz_respondido' && l.correto).length;
     const tempos   = logs.filter(l => l.tipo === 'saida_pagina' && l.tempo_na_pagina_seg);
     const tempoMedio = tempos.length
@@ -454,12 +458,12 @@
       <div class="kpi">
         <div class="kpi-label">Total de eventos</div>
         <div class="kpi-value">${logs.length}</div>
-        <div class="kpi-sub">registros no log</div>
+        <div class="kpi-sub">registros no Firebase</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Sessões únicas</div>
+        <div class="kpi-label">Visitantes únicos</div>
         <div class="kpi-value">${sessoes}</div>
-        <div class="kpi-sub">visitantes distintos</div>
+        <div class="kpi-sub">sessões distintas</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Acessos à página</div>
@@ -474,14 +478,14 @@
       <div class="kpi">
         <div class="kpi-label">Tempo médio</div>
         <div class="kpi-value">${tempoMedio}s</div>
-        <div class="kpi-sub">na página por sessão</div>
+        <div class="kpi-sub">permanência por sessão</div>
       </div>
     `;
   }
 
-  /* ── MINI GRÁFICOS ── */
+  /* ── GRÁFICOS ── */
   function renderChart(containerId, dados) {
-    const max = Math.max(...Object.values(dados), 1);
+    const max  = Math.max(...Object.values(dados), 1);
     const html = Object.entries(dados)
       .sort((a, b) => b[1] - a[1])
       .map(([label, count]) => `
@@ -493,29 +497,30 @@
           <span class="bar-count">${count}</span>
         </div>
       `).join('');
-    document.getElementById(containerId).innerHTML = html || '<div style="padding:1rem;color:var(--muted);font-size:0.8rem;">Sem dados</div>';
+    document.getElementById(containerId).innerHTML =
+      html || '<div style="padding:1rem;color:var(--muted);font-size:0.8rem;">Sem dados</div>';
   }
 
   /* ── TABELA ── */
   function renderTabela(logs) {
     if (!logs.length) {
       document.getElementById('tableContainer').innerHTML =
-        '<div class="empty-state">📭 Nenhum log encontrado.<br>Acesse a página principal para gerar registros.</div>';
+        '<div class="empty-state">📭 Nenhum log encontrado ainda.<br>Acesse a página principal para gerar registros.</div>';
       return;
     }
 
     const rows = logs.map(l => {
       const extra = Object.entries(l)
-        .filter(([k]) => !['id','sessao','tipo','horario','dispositivo','navegador','idioma','pagina'].includes(k))
+        .filter(([k]) => !['id','sessao','tipo','horario','timestamp','dispositivo','navegador','idioma','resolucao','referrer'].includes(k))
         .map(([k, v]) => `${k}: ${v}`)
         .join(' · ');
 
       return `
         <tr>
-          <td class="mono">${l.horario}</td>
+          <td class="mono">${l.horario || '—'}</td>
           <td>${badgeTipo(l.tipo)}</td>
-          <td class="mono">${l.sessao}</td>
-          <td>${l.dispositivo} · ${l.navegador}</td>
+          <td class="mono">${l.sessao || '—'}</td>
+          <td>${l.dispositivo || '—'} · ${l.navegador || '—'}</td>
           <td class="mono" style="color:var(--muted);font-size:0.7rem;">${extra || '—'}</td>
         </tr>
       `;
@@ -537,6 +542,31 @@
     `;
   }
 
+  /* ── RENDER COMPLETO ── */
+  function renderDashboard(logs) {
+    todosLogs = logs;
+
+    renderKPIs(logs);
+
+    const contTipos = {};
+    logs.forEach(l => {
+      const label = l.tipo.replace(/_/g, ' ');
+      contTipos[label] = (contTipos[label] || 0) + 1;
+    });
+    renderChart('chartTipos', contTipos);
+
+    const contDisp = {};
+    logs.forEach(l => {
+      if (l.dispositivo) contDisp[l.dispositivo] = (contDisp[l.dispositivo] || 0) + 1;
+    });
+    renderChart('chartDispositivos', contDisp);
+
+    renderTabela(logs);
+
+    document.getElementById('updateTime').textContent =
+      '🟢 Tempo real — atualizado em: ' + new Date().toLocaleString('pt-BR');
+  }
+
   /* ── FILTRO ── */
   function filtrarTabela(termo) {
     const t = termo.toLowerCase();
@@ -546,54 +576,26 @@
     renderTabela(filtrados);
   }
 
-  /* ── RENDER PRINCIPAL ── */
-  function renderDashboard() {
-    todosLogs = window.getLogs();
-
-    // KPIs
-    renderKPIs(todosLogs);
-
-    // Gráfico de tipos
-    const contTipos = {};
-    todosLogs.forEach(l => {
-      const label = l.tipo.replace(/_/g, ' ');
-      contTipos[label] = (contTipos[label] || 0) + 1;
-    });
-    renderChart('chartTipos', contTipos);
-
-    // Gráfico de dispositivos
-    const contDisp = {};
-    todosLogs.forEach(l => {
-      contDisp[l.dispositivo] = (contDisp[l.dispositivo] || 0) + 1;
-    });
-    renderChart('chartDispositivos', contDisp);
-
-    // Tabela
-    renderTabela(todosLogs);
-
-    // Timestamp
-    document.getElementById('updateTime').textContent =
-      'Atualizado em: ' + new Date().toLocaleString('pt-BR');
-  }
-
   /* ── LIMPAR ── */
   function confirmarLimpar() {
-    if (confirm('⚠️ Tem certeza que quer apagar TODOS os logs? Essa ação não pode ser desfeita.')) {
-      window.limparLogs();
-      renderDashboard();
+    if (confirm('⚠️ Tem certeza que quer apagar TODOS os logs do Firebase? Essa ação não pode ser desfeita.')) {
+      window.limparLogsFirebase()
+        .then(() => alert('✅ Logs apagados com sucesso!'))
+        .catch(e => alert('❌ Erro ao apagar: ' + e));
     }
   }
 
-  /* ── LOGIN ── */
-  const SENHA_CORRETA = 'ciberguarda@2025'; // ← altere aqui a senha
+  /* ══════════════════════════════════════
+     LOGIN
+  ══════════════════════════════════════ */
+  const SENHA_CORRETA = 'ciberguarda@2025'; // ← mude aqui
   const SESSION_AUTH  = 'cg_dev_auth';
   let tentativas = 0;
-  const MAX_TENTATIVAS = 5;
 
   function verificarAuth() {
     if (sessionStorage.getItem(SESSION_AUTH) === 'ok') {
       document.getElementById('loginScreen').style.display = 'none';
-      renderDashboard();
+      iniciarPainel();
     }
   }
 
@@ -601,23 +603,23 @@
     const input = document.getElementById('loginInput');
     const erro  = document.getElementById('loginError');
     const info  = document.getElementById('loginAttempts');
+    const MAX   = 5;
 
-    if (tentativas >= MAX_TENTATIVAS) {
+    if (tentativas >= MAX) {
       erro.textContent = '🚫 Muitas tentativas. Recarregue a página.';
-      input.disabled = true;
       return;
     }
 
     if (input.value === SENHA_CORRETA) {
       sessionStorage.setItem(SESSION_AUTH, 'ok');
       document.getElementById('loginScreen').style.display = 'none';
-      renderDashboard();
+      iniciarPainel();
     } else {
       tentativas++;
       input.value = '';
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 400);
-      const restantes = MAX_TENTATIVAS - tentativas;
+      const restantes = MAX - tentativas;
       erro.textContent = '❌ Senha incorreta.';
       info.textContent = restantes > 0
         ? `${restantes} tentativa(s) restante(s)`
@@ -626,13 +628,26 @@
     }
   }
 
-  // Verifica ao carregar
-  verificarAuth();
+  /* ══════════════════════════════════════
+     INICIAR PAINEL (após login)
+     Usa escuta em tempo real do Firebase
+  ══════════════════════════════════════ */
+  function iniciarPainel() {
+    document.getElementById('updateTime').textContent = '⏳ Conectando ao Firebase…';
 
-  // Auto-atualiza a cada 10 segundos (só se autenticado)
-  setInterval(() => {
-    if (sessionStorage.getItem(SESSION_AUTH) === 'ok') renderDashboard();
-  }, 10000);
+    // escutarLogs atualiza automaticamente sempre que um novo log chegar
+    window.escutarLogs((logs) => {
+      renderDashboard(logs);
+    });
+  }
+
+  // Botão exportar passa os logs atuais
+  document.getElementById('btnExportar').addEventListener('click', () => {
+    window.exportarLogs(todosLogs);
+  });
+
+  // Verifica sessão ao carregar
+  verificarAuth();
 
 </script>
 
