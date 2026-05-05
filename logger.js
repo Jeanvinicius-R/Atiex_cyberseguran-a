@@ -18,22 +18,20 @@
      Firebase Console → Seu projeto → Configurações ⚙️
      → Seus apps → SDK Firebase → Configuração
   ══════════════════════════════════════════════════════ */
-  // Import the functions you need from the SDKs you need
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const FIREBASE_CONFIG = {
-  apiKey: "...",
-  authDomain: "...",
-  databaseURL: "...",
-  projectId: "...",
-  storageBucket: "...",
-  messagingSenderId: "...",
-  appId: "...",
+  const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCi0yuJQAqES7jIebtkSeoYzYBjOlJUQZ0",
+  authDomain: "ciberguarda.firebaseapp.com",
+  databaseURL: "https://ciberguarda-default-rtdb.firebaseio.com",
+  projectId: "ciberguarda",
+  storageBucket: "ciberguarda.firebasestorage.app",
+  messagingSenderId: "110278507200",
+  appId: "1:110278507200:web:280293cb704d160fb78b25",
 };
+
+
+  /* ══════════════════════════════════════════════════════
+     UTILITÁRIOS
+  ══════════════════════════════════════════════════════ */
 
   /** Retorna data/hora no formato brasileiro */
   function agora() {
@@ -91,6 +89,7 @@ const FIREBASE_CONFIG = {
       }
       if (!firebase.apps.length) {
         firebase.initializeApp(FIREBASE_CONFIG);
+        const db = firebase.database();
       }
       db = firebase.database();
       console.info('[Logger] ✅ Firebase conectado. Sessão:', obterSessao());
