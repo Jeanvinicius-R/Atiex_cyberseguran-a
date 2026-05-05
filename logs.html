@@ -391,7 +391,7 @@
   <div class="header-actions">
     <a href="index.html" class="btn btn-outline">← Voltar ao site</a>
     <button class="btn btn-accent" id="btnExportar">⬇️ Exportar JSON</button>
-    <button class="btn btn-outline" onclick="renderDashboard()">🔄 Atualizar</button>
+    <button class="btn btn-outline" onclick="renderDashboard(todosLogs)">🔄 Atualizar</button>
     <button class="btn btn-danger" onclick="confirmarLimpar()">🗑️ Limpar logs</button>
   </div>
 </div>
@@ -543,8 +543,9 @@
   }
 
   /* ── RENDER COMPLETO ── */
-  function renderDashboard(logs) {
-    todosLogs = logs;
+  function renderDashboard(logs = todosLogs) {
+  logs = Array.isArray(logs) ? logs : [];
+  todosLogs = logs;
 
     renderKPIs(logs);
 
@@ -633,7 +634,12 @@
      Usa escuta em tempo real do Firebase
   ══════════════════════════════════════ */
   function iniciarPainel() {
-    document.getElementById('updateTime').textContent = '⏳ Conectando ao Firebase…';
+  document.getElementById('updateTime').textContent = '⏳ Conectando ao Firebase…';
+
+  window.escutarLogs((logs) => {
+    renderDashboard(Array.isArray(logs) ? logs : []);
+  });
+}
 
     // escutarLogs atualiza automaticamente sempre que um novo log chegar
     window.escutarLogs((logs) => {
