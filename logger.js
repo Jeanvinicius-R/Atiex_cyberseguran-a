@@ -1,5 +1,3 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 /* ═══════════════════════════════════════════════════════
    CIBERGUARDA — logger.js
    Sistema de log de acessos usando Firebase Realtime DB.
@@ -27,23 +25,15 @@ import { getAnalytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCi0yuJQAqES7jIebtkSeoYzYBjOlJUQZ0",
-  authDomain: "ciberguarda.firebaseapp.com",
-  databaseURL: "https://ciberguarda-default-rtdb.firebaseio.com",
-  projectId: "ciberguarda",
-  storageBucket: "ciberguarda.firebasestorage.app",
-  messagingSenderId: "110278507200",
-  appId: "1:110278507200:web:280293cb704d160fb78b25",
-  measurementId: "G-W2WJJPGZJ3"
+const FIREBASE_CONFIG = {
+  apiKey: "...",
+  authDomain: "...",
+  databaseURL: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "...",
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-  /* ══════════════════════════════════════════════════════
-     UTILITÁRIOS
-  ══════════════════════════════════════════════════════ */
 
   /** Retorna data/hora no formato brasileiro */
   function agora() {
