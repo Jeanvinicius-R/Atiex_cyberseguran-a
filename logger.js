@@ -1,33 +1,25 @@
 /* ═══════════════════════════════════════════════════════
    CIBERGUARDA — logger.js
    Sistema de log de acessos usando Firebase Realtime DB.
-   Todos os visitantes são registrados em tempo real
-   no banco de dados central do Firebase.
-
-   ⚠️  CONFIGURE AS CHAVES ABAIXO antes de publicar!
-       Siga o passo a passo em COMO-PUBLICAR.md
 ════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════
+   🔧 CONFIGURAÇÃO DO FIREBASE — cole suas chaves aqui
+   Firebase Console → Configurações ⚙️ → Seus apps → SDK
+══════════════════════════════════════════════════════ */
+var FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCi0yuJQAqES7jIebtkSeoYzYBjOlJUQZ0",
+  authDomain:        "ciberguarda.firebaseapp.com",
+  databaseURL:       "https://ciberguarda-default-rtdb.firebaseio.com",
+  projectId:         "ciberguarda",
+  storageBucket:     "ciberguarda.firebasestorage.app",
+  messagingSenderId: "110278507200",
+  appId:             "1:110278507200:web:280293cb704d160fb78b25",
+};
 
 (function () {
   'use strict';
 
-  /* ══════════════════════════════════════════════════════
-     🔧 CONFIGURAÇÃO DO FIREBASE
-     Cole aqui as suas chaves do projeto Firebase.
-     Você encontra essas chaves em:
-     Firebase Console → Seu projeto → Configurações ⚙️
-     → Seus apps → SDK Firebase → Configuração
-  ══════════════════════════════════════════════════════ */
-  const firebaseConfig = {
-  apiKey: "AIzaSyCi0yuJQAqES7jIebtkSeoYzYBjOlJUQZ0",
-  authDomain: "ciberguarda.firebaseapp.com",
-  databaseURL: "https://ciberguarda-default-rtdb.firebaseio.com",
-  projectId: "ciberguarda",
-  storageBucket: "ciberguarda.firebasestorage.app",
-  messagingSenderId: "110278507200",
-  appId: "1:110278507200:web:280293cb704d160fb78b25",
-  measurementId: "G-W2WJJPGZJ3"
-};
   /* ══════════════════════════════════════════════════════
      UTILITÁRIOS
   ══════════════════════════════════════════════════════ */
@@ -171,12 +163,17 @@
      LOG AUTOMÁTICO DE ACESSO
   ══════════════════════════════════════════════════════ */
 
-  function init() {
-    if (!inicializarFirebase()) return;
+  // Inicializa Firebase IMEDIATAMENTE (não espera o DOM)
+  inicializarFirebase();
 
-    // Log de acesso à página
-    window.logEvent('acesso_pagina');
-    sessionStorage.setItem('cg_inicio', Date.now());
+  function init() {
+    // Firebase já foi inicializado acima — aqui só registramos eventos do DOM
+
+    // Log de acesso à página (só no index, não no logs.html)
+    if (document.getElementById('pwInput') !== null || document.querySelector('nav')) {
+      window.logEvent('acesso_pagina');
+      sessionStorage.setItem('cg_inicio', Date.now());
+    }
 
     // Log de saída com tempo de permanência
     window.addEventListener('beforeunload', () => {
