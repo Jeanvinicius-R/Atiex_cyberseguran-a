@@ -391,7 +391,7 @@
   <div class="header-actions">
     <a href="index.html" class="btn btn-outline">← Voltar ao site</a>
     <button class="btn btn-accent" id="btnExportar">⬇️ Exportar JSON</button>
-    <button class="btn btn-outline" onclick="renderDashboard(todosLogs)">🔄 Atualizar</button>
+    <button class="btn btn-outline" onclick="renderDashboard()">🔄 Atualizar</button>
     <button class="btn btn-danger" onclick="confirmarLimpar()">🗑️ Limpar logs</button>
   </div>
 </div>
@@ -543,9 +543,8 @@
   }
 
   /* ── RENDER COMPLETO ── */
-  function renderDashboard(logs = todosLogs) {
-  logs = Array.isArray(logs) ? logs : [];
-  todosLogs = logs;
+  function renderDashboard(logs) {
+    todosLogs = logs;
 
     renderKPIs(logs);
 
@@ -631,21 +630,32 @@
 
   /* ══════════════════════════════════════
      INICIAR PAINEL (após login)
-     Usa escuta em tempo real do Firebase
   ══════════════════════════════════════ */
   function iniciarPainel() {
-  document.getElementById('updateTime').textContent = '⏳ Conectando ao Firebase…';
+    document.getElementById('updateTime').textContent = '⏳ Conectando ao Firebase…';
 
-  window.escutarLogs((logs) => {
-    renderDashboard(Array.isArray(logs) ? logs : []);
-  });
-}
+    window.escutarLogs((logs, erro) => {
+      if (erro) {
+        // Mostra erro claro para o desenvolvedor
+        document.getElementById('updateTime').textContent = '❌ Erro Firebase: ' + erro;
+        document.getElementById('kpiGrid').innerHTML = `
+          <div style="grid-column:1/-1;padding:1.5rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:12px;">
+            <div style="color:#ef4444;font-weight:700;margin-bottom:0.5rem;">❌ Não foi possível conectar ao Firebase</div>
+            <div style="color:var(--muted);font-size:0.82rem;font-family:'Space Mono',monospace;">
+              Erro: ${erro}<br><br>
+              Verifique:<br>
+              1. As chaves do Firebase estão corretas no logger.js?<br>
+              2. O Realtime Database foi criado no console do Firebase?<br>
+              3. As regras do banco permitem leitura? (veja COMO-PUBLICAR.md)
+            </div>
+          </div>
+        `;
+        return;
+      }
 
-    // escutarLogs atualiza automaticamente sempre que um novo log chegar
-    window.escutarLogs((logs) => {
       renderDashboard(logs);
     });
-  
+  }
 
   // Botão exportar passa os logs atuais
   document.getElementById('btnExportar').addEventListener('click', () => {

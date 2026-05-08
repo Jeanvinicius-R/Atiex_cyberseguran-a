@@ -18,7 +18,7 @@
      Firebase Console → Seu projeto → Configurações ⚙️
      → Seus apps → SDK Firebase → Configuração
   ══════════════════════════════════════════════════════ */
-  const FIREBASE_CONFIG = {
+  const firebaseConfig = {
   apiKey: "AIzaSyCi0yuJQAqES7jIebtkSeoYzYBjOlJUQZ0",
   authDomain: "ciberguarda.firebaseapp.com",
   databaseURL: "https://ciberguarda-default-rtdb.firebaseio.com",
@@ -26,9 +26,8 @@
   storageBucket: "ciberguarda.firebasestorage.app",
   messagingSenderId: "110278507200",
   appId: "1:110278507200:web:280293cb704d160fb78b25",
+  measurementId: "G-W2WJJPGZJ3"
 };
-
-
   /* ══════════════════════════════════════════════════════
      UTILITÁRIOS
   ══════════════════════════════════════════════════════ */
@@ -89,7 +88,6 @@
       }
       if (!firebase.apps.length) {
         firebase.initializeApp(FIREBASE_CONFIG);
-        const db = firebase.database();
       }
       db = firebase.database();
       console.info('[Logger] ✅ Firebase conectado. Sessão:', obterSessao());
@@ -147,14 +145,26 @@
 
   /** Escuta logs em tempo real e chama callback a cada atualização */
   window.escutarLogs = function (callback) {
-    if (!db) return;
-    db.ref('logs').orderByChild('timestamp').on('value', snapshot => {
-      const logs = [];
-      snapshot.forEach(child => {
-        logs.unshift({ id: child.key, ...child.val() });
-      });
-      callback(logs);
-    });
+    // Se o db ainda não está pronto, tenta novamente em 500ms
+    if (!db) {
+      console.warn('[Logger] escutarLogs: db não pronto, tentando em 500ms...');
+      setTimeout(() => window.escutarLogs(callback), 500);
+      return;
+    }
+    db.ref('logs').orderByChild('timestamp').on('value',
+      snapshot => {
+        const logs = [];
+        snapshot.forEach(child => {
+          logs.unshift({ id: child.key, ...child.val() });
+        });
+        callback(logs);
+      },
+      error => {
+        console.error('[Logger] Erro ao escutar logs:', error.message);
+        // Informa o painel sobre o erro
+        callback(null, error.message);
+      }
+    );
   };
 
   /* ══════════════════════════════════════════════════════
